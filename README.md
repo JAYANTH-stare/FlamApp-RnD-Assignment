@@ -1,22 +1,26 @@
 # FlamApp AI – Research & Development Assignment
 
-## Overview
-
-This project solves the FlamApp AI Research & Development assignment by estimating the unknown parameters of a parametric curve from a given set of 2D points.
-
-The unknown parameters are:
-
-- θ (Rotation Angle)
-- M (Exponential Growth Factor)
-- X (Horizontal Translation)
-
-The objective is to recover these parameters such that the generated curve closely matches the provided dataset.
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![SciPy](https://img.shields.io/badge/SciPy-Optimization-orange)
+![NumPy](https://img.shields.io/badge/NumPy-Mathematics-yellow)
+![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
 
-## Mathematical Model
+## Overview
 
-The parametric equations are
+This repository contains my solution for the **FlamApp AI Research & Development Assignment**.
+
+The objective of this assignment is to recover the unknown parameters of a nonlinear parametric curve from a given set of observed 2D points.
+
+Unlike a straightforward mathematical implementation, this problem represents an **inverse parameter estimation** task where the original generating parameters are unknown and must be estimated by minimizing the geometric difference between the observed and reconstructed curves.
+
+---
+
+# Problem Statement
+
+Given the following parametric equations
 
 \[
 x=t\cos(\theta)-e^{M|t|}\sin(0.3t)\sin(\theta)+X
@@ -32,106 +36,216 @@ where
 6 ≤ t ≤ 60
 ```
 
-Unknown variables
+Unknown parameters
 
-```
-θ
-M
-X
+- θ (Rotation Angle)
+- M (Exponential Growth Factor)
+- X (Horizontal Translation)
+
+The objective is to estimate these unknown variables using the provided dataset **xy_data.csv**.
+
+---
+
+# Optimization Workflow
+
+```text
+                    FlamApp AI R&D Assignment Workflow
+
+                  +------------------------------+
+                  |        xy_data.csv           |
+                  |   (Observed Curve Points)    |
+                  +--------------+---------------+
+                                 |
+                                 v
+                  +------------------------------+
+                  |       Load Dataset           |
+                  |       (Pandas DataFrame)     |
+                  +--------------+---------------+
+                                 |
+                                 v
+                  +------------------------------+
+                  | Implement Parametric Equation |
+                  |      x(t), y(t) Model         |
+                  +--------------+---------------+
+                                 |
+                                 v
+                  +------------------------------+
+                  | Generate Predicted Curve      |
+                  | (Uniform Sampling of t)       |
+                  +--------------+---------------+
+                                 |
+                                 v
+                  +------------------------------+
+                  | KD-Tree Nearest Neighbor      |
+                  |  Match Observed ↔ Predicted   |
+                  +--------------+---------------+
+                                 |
+                                 v
+                  +------------------------------+
+                  | Compute Objective Function    |
+                  +--------------+---------------+
+                                 |
+                                 v
+                  +------------------------------+
+                  | Differential Evolution        |
+                  | Parameter Optimization        |
+                  +--------------+---------------+
+                                 |
+                                 v
+                  +------------------------------+
+                  | Recover θ, M and X            |
+                  +--------------+---------------+
+                                 |
+                                 v
+                  +------------------------------+
+                  | Visualization & Evaluation    |
+                  +------------------------------+
 ```
 
 ---
 
-## Methodology
+# Methodology
 
-The solution consists of the following stages:
+The complete solution consists of the following stages.
 
-1. Load the provided dataset.
-2. Implement the mathematical model.
-3. Generate the parametric curve.
-4. Define an objective function.
-5. Match unordered points using a KD-Tree nearest-neighbour search.
-6. Recover the parameters using Differential Evolution.
-7. Validate the recovered curve visually.
-8. Export the recovered parameters and error metrics.
+1. Load the observed dataset.
+2. Implement the given mathematical model.
+3. Uniformly sample the parameter **t** over the specified range.
+4. Generate the predicted parametric curve.
+5. Build a KD-Tree from the predicted points.
+6. Match each observed point with its nearest predicted point.
+7. Compute the average nearest-neighbour distance.
+8. Minimize this objective using Differential Evolution.
+9. Export the recovered parameters.
+10. Validate the solution visually.
 
 ---
 
-## Why Differential Evolution?
+# Why Differential Evolution?
 
-The optimization problem is nonlinear and contains three continuous variables.
+The optimization problem is nonlinear and contains three continuous unknown variables.
 
-Differential Evolution was selected because:
+Differential Evolution was selected because
 
 - It performs global optimization.
+- It avoids becoming trapped in local minima.
 - It does not require gradient information.
 - It is robust for nonlinear objective functions.
-- It works well with bounded search spaces.
+- It performs well for bounded continuous search spaces.
 
 ---
 
-## Why KDTree?
+# Why Was a KD-Tree Necessary?
 
-The points in `xy_data.csv` are unordered.
+During the initial implementation, the optimization compared corresponding indices of the observed and predicted points.
 
-Instead of comparing point-by-point, the nearest-neighbour distance between the observed and predicted curves is computed using `scipy.spatial.cKDTree`.
+Although mathematically correct for ordered datasets, this approach produced incorrect parameter estimates because the provided dataset does **not preserve the original ordering of the parameter t**.
 
-This produces a robust approximation of the L1 distance between both curves.
+To overcome this limitation, the optimization was redesigned using a **KD-Tree nearest-neighbour search**.
 
----
+The revised workflow is
 
-## Why Was a KD-Tree Necessary?
-
-One challenge encountered during this assignment was that the points in `xy_data.csv` were **unordered**. The dataset did not preserve the original sequence of the parameter \(t\), making a direct point-by-point comparison between the observed data and the generated curve invalid.
-
-Initially, the objective function compared corresponding indices of the observed and predicted points. This produced incorrect parameter estimates because the first observed point was not necessarily generated by the first sampled value of \(t\).
-
-To solve this problem, a **KD-Tree (cKDTree)** was used to perform efficient nearest-neighbor searches.
-
-The optimization process works as follows:
-
-1. Generate a dense set of points on the predicted curve.
-2. Construct a KD-Tree from these predicted points.
-3. For every observed point, find its nearest predicted point.
-4. Compute the average nearest-neighbor distance.
+1. Generate a dense predicted curve.
+2. Construct a KD-Tree.
+3. Find the nearest predicted point for every observed point.
+4. Compute the average nearest-neighbour distance.
 5. Minimize this distance using Differential Evolution.
 
-This approach makes the optimization independent of the ordering of the dataset while remaining computationally efficient. It also provides a better approximation of the geometric similarity between the observed and predicted curves than direct index-based comparisons.
+This approach makes the optimization independent of the ordering of the dataset while remaining computationally efficient.
 
 ---
 
-## Results
+# Software Architecture
+
+```text
+FlamApp-RnD-Assignment
+
+│
+├── data
+│     └── xy_data.csv
+│
+├── outputs
+│     ├── comparison.png
+│     ├── original_curve.png
+│     ├── residual_histogram.png
+│     ├── parameters.txt
+│     └── results.json
+│
+├── src
+│     ├── curve.py
+│     ├── optimizer.py
+│     ├── visualize.py
+│     ├── residuals.py
+│     ├── utils.py
+│     └── main.py
+│
+├── README.md
+├── requirements.txt
+├── LICENSE
+└── .gitignore
+```
+
+---
+
+# Key Features
+
+- Mathematical implementation of the given parametric equations.
+- Differential Evolution based parameter estimation.
+- KD-Tree nearest-neighbour curve matching.
+- Automatic parameter export.
+- Residual error visualization.
+- Modular project structure.
+- Reproducible optimization workflow.
+
+---
+
+# Final Results
 
 Recovered Parameters
 
-| Parameter | Value |
-|-----------|------:|
-| θ | 30.00003627° |
-| M | 0.03000046 |
-| X | 55.00001394 |
+| Parameter | Estimated Value |
+|-----------|----------------:|
+| θ | **30.00003627°** |
+| M | **0.03000046** |
+| X | **55.00001394** |
 
-Average nearest-point error
+Average nearest-neighbour error
 
 ```
 0.0054797646
 ```
 
+The recovered parameters closely reconstruct the original curve, demonstrating that the optimization successfully solved the inverse parameter estimation problem.
+
 ---
 
-## Project Structure
+# Output
 
-```text
-data/
-outputs/
-src/
+### Curve Comparison
 
-README.md
-requirements.txt
+![Comparison](outputs/comparison.png)
+
+---
+
+### Original Dataset
+
+![Original Dataset](outputs/original_curve.png)
+
+---
+
+### Residual Error Distribution
+
+![Residuals](outputs/residual_histogram.png)
+
+---
+
+# Installation
+
+Clone the repository
+
+```bash
+git clone <repository-url>
 ```
-
----
-
-## How to Run
 
 Install dependencies
 
@@ -145,47 +259,44 @@ Run optimization
 python src/optimizer.py
 ```
 
-Generate visualizations
+Generate plots
 
 ```bash
 python src/visualize.py
 ```
 
----
+Residual analysis
 
-## Output
-
-The project generates
-
-- comparison.png
-- original_curve.png
-- residual_histogram.png
-- parameters.txt
-- results.json
+```bash
+python src/residuals.py
+```
 
 ---
 
-## Results
+# Libraries Used
 
-### Curve Comparison
+- NumPy
+- Pandas
+- SciPy
+- Matplotlib
 
-![Comparison](outputs/comparison.png)
+---
 
-### Original Dataset
+# Future Improvements
 
-![Original](outputs/original_curve.png)
+Potential future enhancements include
 
-### Residual Distribution
-
-![Residuals](outputs/residual_histogram.png)
-
-## Future Improvements
-
-- Multi-objective optimization
 - Bayesian Optimization
+- Particle Swarm Optimization
+- Confidence interval estimation
+- Multi-objective optimization
 - GPU acceleration
-- Automatic parameter confidence intervals
+- Interactive visualization dashboard
 
 ---
 
-Developed as part of the FlamApp AI Research & Development Assignment.
+# Acknowledgements
+
+This project was developed as part of the **FlamApp AI Research & Development Hiring Assignment**.
+
+The implementation focuses on robust parameter estimation, clean software design, reproducibility, and clear documentation.
