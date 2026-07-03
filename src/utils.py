@@ -19,3 +19,17 @@ def save_json(theta, M, X, error):
 
     with open("../outputs/results.json", "w") as f:
         json.dump(result, f, indent=4)
+
+def load_parameters():
+    """
+    Load recovered parameters from results.json
+    """
+
+    with open("../outputs/results.json", "r") as f:
+        data = json.load(f)
+
+    return (
+        data["theta"],
+        data["M"],
+        data["X"],
+    )
