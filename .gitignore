@@ -7,9 +7,9 @@ venv/
 .idea/
 .vscode/
 
-outputs/*.png
-outputs/*.jpg
-outputs/*.pdf
+# outputs/*.png
+# outputs/*.jpg
+# outputs/*.pdf
 
 .DS_Store
 Thumbs.db
