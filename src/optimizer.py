@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy.optimize import differential_evolution
-
+from scipy.spatial import cKDTree
 from curve import generate_curve
 
 
@@ -14,18 +14,27 @@ actual_y = data["y"].values
 
 def objective(params):
     """
-    Objective function to minimize.
-
-    params = [theta, M, X]
+    Objective function using nearest-neighbour search.
     """
 
     theta, M, X = params
 
-    pred_x, pred_y = generate_curve(theta, M, X)
+    pred_x, pred_y = generate_curve(
+        theta,
+        M,
+        X,
+        num_points=3000
+    )
 
-    error = np.abs(actual_x - pred_x) + np.abs(actual_y - pred_y)
+    predicted_points = np.column_stack((pred_x, pred_y))
 
-    return np.mean(error)
+    actual_points = np.column_stack((actual_x, actual_y))
+
+    tree = cKDTree(predicted_points)
+
+    distances, _ = tree.query(actual_points)
+
+    return np.mean(distances)
 
 
 bounds = [
@@ -38,16 +47,29 @@ bounds = [
 result = differential_evolution(
     objective,
     bounds,
+    strategy="best1bin",
+    maxiter=250,
+    popsize=20,
+    tol=1e-7,
+    mutation=(0.5, 1),
+    recombination=0.7,
     seed=42,
-    maxiter=100,
     polish=True
 )
 
 
-print("\nEstimated Parameters")
-print("---------------------")
-print(f"Theta : {result.x[0]:.6f} degrees")
-print(f"M     : {result.x[1]:.6f}")
-print(f"X     : {result.x[2]:.6f}")
+theta = result.x[0]
+M = result.x[1]
+X = result.x[2]
 
-print("\nFinal Error:", result.fun)
+print("=" * 40)
+print("Recovered Parameters")
+print("=" * 40)
+
+print(f"Theta : {theta:.8f} degrees")
+print(f"M     : {M:.8f}")
+print(f"X     : {X:.8f}")
+
+print("\nAverage Nearest-Point Error")
+
+print(result.fun)
