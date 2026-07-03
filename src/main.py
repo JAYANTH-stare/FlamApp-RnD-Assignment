@@ -1,16 +1,40 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 
-# Load dataset
+from curve import generate_curve
+
+# Load assignment data
 data = pd.read_csv("../data/xy_data.csv")
 
-print("First 5 rows:")
-print(data.head())
+# Known solution (for verification)
+theta = 30
+M = 0.03
+X = 55
 
-print("\nDataset Information:")
-print(data.info())
+curve_x, curve_y = generate_curve(theta, M, X)
 
-print("\nStatistical Summary:")
-print(data.describe())
+plt.figure(figsize=(8, 8))
 
-print("\nMissing Values:")
-print(data.isnull().sum())
+# Assignment points
+plt.scatter(
+    data["x"],
+    data["y"],
+    s=8,
+    label="Assignment Data"
+)
+
+# Generated curve
+plt.plot(
+    curve_x,
+    curve_y,
+    color="red",
+    linewidth=2,
+    label="Generated Curve"
+)
+
+plt.axis("equal")
+plt.grid(True)
+
+plt.legend()
+
+plt.show()
