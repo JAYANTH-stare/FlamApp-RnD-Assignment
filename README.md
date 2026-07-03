@@ -300,3 +300,17 @@ Potential future enhancements include
 This project was developed as part of the **FlamApp AI Research & Development Hiring Assignment**.
 
 The implementation focuses on robust parameter estimation, clean software design, reproducibility, and clear documentation.
+
+---
+
+## References
+
+1. R. Storn and K. Price, *Differential Evolution – A Simple and Efficient Heuristic for Global Optimization over Continuous Spaces*, Journal of Global Optimization, 1997.
+
+2. SciPy Developers. *SciPy Optimization Documentation*. https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html
+
+3. SciPy Developers. *scipy.spatial.cKDTree Documentation*. https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.cKDTree.html
+
+4. NumPy Developers. *NumPy Documentation*. https://numpy.org/doc/
+
+5. Matplotlib Developers. *Matplotlib Documentation*. https://matplotlib.org/stable/
