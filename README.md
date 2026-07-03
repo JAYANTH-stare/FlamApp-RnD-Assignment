@@ -145,6 +145,20 @@ The project generates
 
 ---
 
+## Results
+
+### Curve Comparison
+
+![Comparison](outputs/comparison.png)
+
+### Original Dataset
+
+![Original](outputs/original_curve.png)
+
+### Residual Distribution
+
+![Residuals](outputs/residual_histogram.png)
+
 ## Future Improvements
 
 - Multi-objective optimization
