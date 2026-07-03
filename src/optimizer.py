@@ -3,6 +3,7 @@ import pandas as pd
 from scipy.optimize import differential_evolution
 from scipy.spatial import cKDTree
 from curve import generate_curve
+from utils import save_parameters, save_json
 
 
 # Load assignment data
@@ -73,3 +74,6 @@ print(f"X     : {X:.8f}")
 print("\nAverage Nearest-Point Error")
 
 print(result.fun)
+
+save_parameters(theta, M, X, result.fun)
+save_json(theta, M, X, result.fun)
